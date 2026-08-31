@@ -1,5 +1,6 @@
 package com.gamehub.two;
 
 interface IShizukuShell {
-    String run(String command);
+    void destroy() = 16777114;
+    String run(String command) = 1;
 }

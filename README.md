@@ -1,55 +1,24 @@
-# Game Hub 2.0
+# Roblox DPI
 
-App Android simples com:
+Aplicativo Android simples para aplicar 600 DPI com Shizuku, abrir o Roblox e
+restaurar a densidade original depois.
 
-- Overlay por cima do Roblox
-- Botão para baixar resolução via Shizuku
-- Botão para restaurar resolução normal
-- Abrir e fechar Roblox
-- Medidor simples de RAM livre
-- Build automática via GitHub Actions
+## Uso
 
-## Requisitos no celular
+1. Inicie o Shizuku no celular.
+2. Abra o Roblox DPI e toque em **Conectar Shizuku**.
+3. Autorize o aplicativo no Shizuku quando solicitado.
+4. Toque em **Abrir Roblox em 600 DPI**.
+5. Quando terminar de jogar, volte ao Roblox DPI e toque em
+   **Restaurar DPI normal**.
 
-1. Instalar Shizuku
-2. Iniciar Shizuku
-3. Abrir Game Hub 2.0
-4. Tocar em "Pedir permissão Shizuku"
-5. Tocar em "Permitir overlay"
-6. Tocar em "Iniciar overlay"
-
-## Comandos usados
-
-Modo desempenho:
-
-```sh
-wm size 720x1600
-wm density 240
-```
-
-Restaurar:
-
-```sh
-wm size reset
-wm density reset
-```
-
-Abrir Roblox:
-
-```sh
-monkey -p com.roblox.client 1
-```
-
-Fechar Roblox:
-
-```sh
-am force-stop com.roblox.client
-```
+O aplicativo altera somente a densidade lógica do display. Ele não muda a
+resolução, as escalas de animação nem outras configurações do Android.
 
 ## Build
 
-No GitHub:
+```sh
+./gradlew clean assembleDebug
+```
 
-Actions → Build APK → Run workflow
-
-Depois baixe o APK em Artifacts.
+O APK é criado em `app/build/outputs/apk/debug/app-debug.apk`.

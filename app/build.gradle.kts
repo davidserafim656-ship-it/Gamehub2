@@ -11,8 +11,8 @@ android {
         applicationId = "com.gamehub.two"
         minSdk = 26
         targetSdk = 35
-        versionCode = 21
-        versionName = "2.1"
+        versionCode = 22
+        versionName = "2.2"
     }
 
     buildFeatures {
@@ -30,7 +30,6 @@ android {
 }
 
 dependencies {
-    implementation("androidx.core:core-ktx:1.13.1")
     implementation("dev.rikka.shizuku:api:13.1.5")
     implementation("dev.rikka.shizuku:provider:13.1.5")
 }
