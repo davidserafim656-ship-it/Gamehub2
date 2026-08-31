@@ -3,9 +3,12 @@ package com.gamehub.two
 import android.app.Activity
 import android.content.ComponentName
 import android.content.ServiceConnection
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.os.IBinder
-import android.widget.*
+import android.widget.Button
+import android.widget.LinearLayout
+import android.widget.TextView
 import rikka.shizuku.Shizuku
 import rikka.shizuku.Shizuku.UserServiceArgs
 
@@ -17,7 +20,7 @@ class MainActivity : Activity() {
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, binder: IBinder?) {
             shell = IShizukuShell.Stub.asInterface(binder)
-            status.text = "Shizuku conectado ✅"
+            status.text = "Shizuku conectado"
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -26,8 +29,21 @@ class MainActivity : Activity() {
         }
     }
 
+    private val permissionListener =
+        Shizuku.OnRequestPermissionResultListener { requestCode, grantResult ->
+            if (requestCode == 100) {
+                if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                    connectShizuku()
+                } else {
+                    status.text = "Permissão do Shizuku negada"
+                }
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        Shizuku.addRequestPermissionResultListener(permissionListener)
 
         val layout = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
@@ -35,76 +51,98 @@ class MainActivity : Activity() {
         }
 
         status = TextView(this).apply {
-            text = "Game Hub 2.1\nInicie o Shizuku primeiro."
+            text = "Inicie o Shizuku primeiro"
             textSize = 18f
         }
 
-        fun button(text: String, cmd: String): Button {
-            return Button(this).apply {
-                this.text = text
-                setOnClickListener {
-                    runCommand(cmd)
-                }
-            }
-        }
-
-        val perm = Button(this).apply {
+        val connect = Button(this).apply {
             text = "Conectar Shizuku"
             setOnClickListener {
                 connectShizuku()
             }
         }
 
+        val roblox600 = Button(this).apply {
+            text = "Abrir Roblox em 600 DPI"
+
+            setOnClickListener {
+                val service = shell
+
+                if (service == null) {
+                    status.text = "Conecte o Shizuku primeiro"
+                    return@setOnClickListener
+                }
+
+                val result = service.run("wm density 600")
+
+                if (result.startsWith("Erro")) {
+                    status.text = result
+                    return@setOnClickListener
+                }
+
+                val intent =
+                    packageManager.getLaunchIntentForPackage("com.roblox.client")
+
+                if (intent != null) {
+                    startActivity(intent)
+                    status.text = "600 DPI aplicado"
+                } else {
+                    status.text = "Roblox não encontrado"
+                }
+            }
+        }
+
+        val restore = Button(this).apply {
+            text = "Restaurar DPI normal"
+
+            setOnClickListener {
+                val service = shell
+
+                if (service == null) {
+                    status.text = "Conecte o Shizuku primeiro"
+                    return@setOnClickListener
+                }
+
+                status.text = service.run("wm density reset")
+            }
+        }
+
         layout.addView(status)
-        layout.addView(perm)
-
-        layout.addView(button("Abrir Roblox em 600 DPI",
-    "wm density 600; monkey -p com.roblox.client 1"
-))
-
-        layout.addView(button("Restaurar DPI normal",
-    "wm density reset"
-))
-
-        layout.addView(button("Abrir Roblox", 
-            "monkey -p com.roblox.client 1"
-        ))
-
-        layout.addView(button("Fechar Roblox", 
-            "am force-stop com.roblox.client"
-        ))
-
-        layout.addView(button("Ver RAM Roblox", 
-            "dumpsys meminfo com.roblox.client | head -n 25"
-        ))
+        layout.addView(connect)
+        layout.addView(roblox600)
+        layout.addView(restore)
 
         setContentView(layout)
     }
 
     private fun connectShizuku() {
         if (!Shizuku.pingBinder()) {
-            status.text = "Shizuku não está ativo."
+            status.text = "Shizuku não está ativo"
             return
         }
 
-        if (Shizuku.checkSelfPermission() != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+        if (Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) {
             Shizuku.requestPermission(100)
-            status.text = "Permissão Shizuku solicitada."
+            status.text = "Solicitando permissão..."
             return
         }
 
-        val args = UserServiceArgs(ComponentName(this, ShizukuShellService::class.java))
-            .daemon(false)
-            .processNameSuffix("shell")
-            .debuggable(false)
-            .version(1)
+        val args =
+            UserServiceArgs(
+                ComponentName(this, ShizukuShellService::class.java)
+            )
+                .daemon(false)
+                .processNameSuffix("shell")
+                .debuggable(false)
+                .version(1)
 
         Shizuku.bindUserService(args, connection)
-        status.text = "Conectando ao Shizuku..."
+
+        status.text = "Conectando..."
     }
 
-    private fun runCommand(cmd: String) {
-        val result = shell?.run(cmd)
-        status.text = result ?: "Clique em Conectar Shizuku primeiro."
+    override fun onDestroy() {
+        Shizuku.removeRequestPermissionResultListener(permissionListener)
+        super.onDestroy()
     }
 }
