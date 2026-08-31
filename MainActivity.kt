@@ -58,13 +58,13 @@ class MainActivity : Activity() {
         layout.addView(status)
         layout.addView(perm)
 
-        layout.addView(button("Modo desempenho Roblox", 
-            "wm size 720x1600; wm density 240; settings put global window_animation_scale 0.5; settings put global transition_animation_scale 0.5; settings put global animator_duration_scale 0.5"
-        ))
+        layout.addView(button("Abrir Roblox em 600 DPI",
+    "wm density 600; monkey -p com.roblox.client 1"
+))
 
-        layout.addView(button("Restaurar normal", 
-            "wm size reset; wm density reset; settings put global window_animation_scale 1; settings put global transition_animation_scale 1; settings put global animator_duration_scale 1"
-        ))
+        layout.addView(button("Restaurar DPI normal",
+    "wm density reset"
+))
 
         layout.addView(button("Abrir Roblox", 
             "monkey -p com.roblox.client 1"
